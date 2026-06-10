@@ -62,6 +62,8 @@ CLOUDFLARE_API_TOKEN=your_api_token_here
 > Cloudflare Dashboard → My Profile → **API Tokens** → Create Token  
 > Use a custom token with **Zone > Zone > Read** and **Zone > DNS > Read** permissions.
 
+![Cloudflare API Token Permissions](cloudflare-screenshot.png)
+
 ### 3. Make the script executable
 
 ```bash
