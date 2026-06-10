@@ -24,22 +24,30 @@ getDomains() {
         -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
         -H "Content-Type: application/json")
 
-    if [ $? -eq 0 ]; then
-        count=$(echo "$response" | jq -r '.result_info.count')
-        total_pages=$(echo "$response" | jq -r '.result_info.total_pages')
-        total_count=$(echo "$response" | jq -r '.result_info.total_count')
-
-        echo "Fetching batch of $count DNS records ..."
-        addDomainsToList "$response"
-
-        if [ $page -lt $total_pages ]; then
-            getDomains $((page + 1))
-        else
-            echo "Fetched $total_count domains."
-        fi
-    else
-        echo "Error: Failed to fetch domains. Exiting."
+    if [ $? -ne 0 ]; then
+        echo "Error: curl failed while fetching domains. Exiting."
         exit 1
+    fi
+
+    success=$(echo "$response" | jq -r '.success')
+    if [ "$success" != "true" ]; then
+        error_msg=$(echo "$response" | jq -r '.errors[0].message')
+        echo "Error: Cloudflare API rejected zone list request — $error_msg"
+        echo "Check that your CLOUDFLARE_API_TOKEN has Zone:Read permission."
+        exit 1
+    fi
+
+    count=$(echo "$response" | jq -r '.result_info.count')
+    total_pages=$(echo "$response" | jq -r '.result_info.total_pages')
+    total_count=$(echo "$response" | jq -r '.result_info.total_count')
+
+    echo "Fetching batch of $count DNS records ..."
+    addDomainsToList "$response"
+
+    if [ $page -lt $total_pages ]; then
+        getDomains $((page + 1))
+    else
+        echo "Fetched $total_count domains."
     fi
 }
 
@@ -64,14 +72,22 @@ exportDNS() {
         -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
         -H "Content-Type: application/json")
 
-if [ $? -eq 0 ]; then
+    if [ $? -ne 0 ]; then
+        echo "Error: curl failed for domain $domain_name. Skipping."
+        return 1
+    fi
+
+    # The export endpoint returns a BIND zone file on success, or JSON on error
+    if echo "$response" | jq -e '.success == false' &>/dev/null; then
+        error_msg=$(echo "$response" | jq -r '.errors[0].message')
+        echo "Error exporting $domain_name — $error_msg"
+        echo "Check that your CLOUDFLARE_API_TOKEN has Zone:DNS:Read permission."
+        return 1
+    fi
+
     timestamp=$(date +"%Y%m%d_%H%M%S")
     echo "$response" > "./domains/${domain_name}_${timestamp}.txt"
     echo "Exported DNS records for domain: ${domain_name}"
-else
-    echo "Error exporting DNS records for domain $domain_name. Exiting."
-    exit 1
-fi
 
 }
 
