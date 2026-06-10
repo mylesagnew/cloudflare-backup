@@ -60,7 +60,7 @@ CLOUDFLARE_API_TOKEN=your_api_token_here
 
 > **Where to find your credentials:**  
 > Cloudflare Dashboard → Manage Account → Account API Tokens → Create a Token  
-> Use Edit Policy ALL DOMAINS Read only on ALL 6 Options on DNS & Zones
+> Use Edit Policy ALL DOMAINS Read on ALL 6 Options on DNS & Zones
 
 ![Cloudflare API Token Permissions](cloudflare-screenshot.png)
 
