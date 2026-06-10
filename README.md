@@ -55,12 +55,12 @@ cd cloudflare-backup
 Copy or edit the `.env` file in the project root:
 
 ```bash
-CLOUDFLARE_API_KEY=your_global_api_key_here
-CLOUDFLARE_USER_EMAIL=your@email.com
+CLOUDFLARE_API_TOKEN=your_api_token_here
 ```
 
 > **Where to find your credentials:**  
-> Cloudflare Dashboard → My Profile → API Tokens → **Global API Key**
+> Cloudflare Dashboard → My Profile → **API Tokens** → Create Token  
+> Use a custom token with **Zone > Zone > Read** and **Zone > DNS > Read** permissions.
 
 ### 3. Make the script executable
 
@@ -135,8 +135,8 @@ crontab -e
 
 ## Security Notes
 
-- **Never commit `.env`** — add it to `.gitignore` to avoid exposing your API key
-- The script uses the **Global API Key** which has full account access; consider using a scoped API Token with `Zone:DNS:Read` permission for least-privilege access
+- **Never commit `.env`** — add it to `.gitignore` to avoid exposing your API token
+- The script uses a scoped **API Token** with `Zone:Read` and `Zone:DNS:Read` permissions — never grant more than the minimum required
 
 ---
 

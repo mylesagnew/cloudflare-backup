@@ -21,8 +21,7 @@ checkEnvironment() {
 getDomains() {
     page=${1:-1}
     response=$(curl -s -X GET "${CLOUDFLARE_ENDPOINT}zones?page=${page}" \
-        -H "X-Auth-Email: $CLOUDFLARE_USER_EMAIL" \
-        -H "X-Auth-Key: $CLOUDFLARE_API_KEY" \
+        -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
         -H "Content-Type: application/json")
 
     if [ $? -eq 0 ]; then
@@ -62,8 +61,7 @@ exportDNS() {
     domain_name=$(echo "$1" | jq -r '.name')
 
     response=$(curl -s -X GET "${CLOUDFLARE_ENDPOINT}zones/${domain_id}/dns_records/export" \
-        -H "X-Auth-Email: $CLOUDFLARE_USER_EMAIL" \
-        -H "X-Auth-Key: $CLOUDFLARE_API_KEY" \
+        -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
         -H "Content-Type: application/json")
 
 if [ $? -eq 0 ]; then
