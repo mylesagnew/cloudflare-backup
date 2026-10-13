@@ -3,6 +3,10 @@
 # Bash script to Backup DNS records
 CLOUDFLARE_ENDPOINT="https://api.cloudflare.com/client/v4/"
 
+# Run from the script's own directory so .env and ./domains resolve the same
+# way under cron as they do interactively.
+cd "$(dirname "$0")" || exit 1
+
 # Array to store domain names
 declare -a domainList
 
@@ -10,9 +14,15 @@ declare -a domainList
 checkEnvironment() {
     if [ -f ".env" ]; then
         echo "Using .env file"
+        # shellcheck source=/dev/null
         source .env
     else
-        echo "No .env file found. Exiting"
+        echo "No .env file found. Copy .env.example to .env and add your API token. Exiting"
+        exit 1
+    fi
+
+    if [ -z "${CLOUDFLARE_API_TOKEN:-}" ] || [ "$CLOUDFLARE_API_TOKEN" = "your_api_token_here" ]; then
+        echo "CLOUDFLARE_API_TOKEN is not set in .env. Exiting"
         exit 1
     fi
 }
@@ -41,10 +51,10 @@ getDomains() {
     total_pages=$(echo "$response" | jq -r '.result_info.total_pages')
     total_count=$(echo "$response" | jq -r '.result_info.total_count')
 
-    echo "Fetching batch of $count DNS records ..."
+    echo "Fetching batch of $count zones ..."
     addDomainsToList "$response"
 
-    if [ $page -lt $total_pages ]; then
+    if [ "$page" -lt "$total_pages" ]; then
         getDomains $((page + 1))
     else
         echo "Fetched $total_count domains."
@@ -61,9 +71,7 @@ addDomainsToList() {
 
 # Function to export DNS records for a domain
 exportDNS() {
-    if [ ! -d "./domains" ]; then
-        mkdir "./domains"
-    fi
+    mkdir -p "./domains"
 
     domain_id=$(echo "$1" | jq -r '.id')
     domain_name=$(echo "$1" | jq -r '.name')

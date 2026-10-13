@@ -4,6 +4,10 @@
 
 # Cloudflare Backup
 
+[![ShellCheck](https://github.com/mylesagnew/cloudflare-backup/actions/workflows/shellcheck.yml/badge.svg)](https://github.com/mylesagnew/cloudflare-backup/actions/workflows/shellcheck.yml)
+[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](LICENSE)
+![Bash](https://img.shields.io/badge/bash-script-4EAA25?logo=gnu-bash&logoColor=white)
+
 A bash script that uses the Cloudflare API to export and back up DNS records for all zones in your account. Records are saved as timestamped `.txt` files in a local `/domains` directory.
 
 ---
@@ -52,15 +56,27 @@ cd cloudflare-backup
 
 ### 2. Configure credentials
 
-Copy or edit the `.env` file in the project root:
+Copy the example file, lock down its permissions, and add your token:
+
+```bash
+cp .env.example .env
+chmod 600 .env
+```
 
 ```bash
 CLOUDFLARE_API_TOKEN=your_api_token_here
 ```
 
-> **Where to find your credentials:**  
-> Cloudflare Dashboard → Manage Account → Account API Tokens → Create a Token  
-> Use Edit Policy ALL DOMAINS Read on ALL 6 Options on DNS & Zones
+`.env` is listed in `.gitignore`, so it won't be committed.
+
+> **Creating the token:**  
+> Cloudflare Dashboard → My Profile → API Tokens → Create Token → **Create Custom Token**  
+> Permissions (read-only is enough, so don't grant Edit):
+> - **Zone → Zone → Read**
+> - **Zone → DNS → Read**
+>
+> Zone Resources: **Include → All zones** (or only the zones you want to back up).  
+> Optionally restrict the token to your backup host's IP with **Client IP Address Filtering**, and set a TTL.
 
 ![Cloudflare API Token Permissions](cloudflare-screenshot.png)
 
@@ -114,7 +130,8 @@ domains/
 ```
 cloudflare-backup/
 ├── cf-dns-backup.sh   # Main backup script
-├── .env               # Cloudflare credentials (not committed)
+├── .env.example       # Template — copy to .env
+├── .env               # Your Cloudflare token (git-ignored)
 ├── domains/           # Output directory (created automatically)
 └── README.md
 ```
@@ -137,11 +154,14 @@ crontab -e
 
 ## Security Notes
 
-- **Never commit `.env`** — add it to `.gitignore` to avoid exposing your API token
-- The script uses a scoped **API Token** with `Zone:Read` and `Zone:DNS:Read` permissions — never grant more than the minimum required
+- **Never commit `.env`**. It is git-ignored; keep it at `chmod 600`.
+- Use a scoped **API Token** with only `Zone:Read` and `DNS:Read`. Never use the Global API Key.
+- The script runs from its own directory, so the cron entry works from any working directory.
+- Exports contain your full DNS layout (including internal hostnames). Store `domains/` on access-controlled storage.
+- Report vulnerabilities privately; see [SECURITY.md](SECURITY.md).
 
 ---
 
 ## License
 
-This project is licensed under the terms of the [LICENSE](LICENSE) file.
+[GPL-3.0](LICENSE) © Myles Agnew
