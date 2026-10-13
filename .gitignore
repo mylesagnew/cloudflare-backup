@@ -1,0 +1,11 @@
+# Credentials — never commit
+.env
+
+# Backup output
+domains/
+
+# Editor / OS
+.DS_Store
+.vscode/
+.idea/
+*.swp
