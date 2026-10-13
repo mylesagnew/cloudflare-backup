@@ -5,6 +5,7 @@
 # Cloudflare Backup
 
 [![ShellCheck](https://github.com/mylesagnew/cloudflare-backup/actions/workflows/shellcheck.yml/badge.svg)](https://github.com/mylesagnew/cloudflare-backup/actions/workflows/shellcheck.yml)
+[![Release](https://img.shields.io/github/v/release/mylesagnew/cloudflare-backup)](https://github.com/mylesagnew/cloudflare-backup/releases/latest)
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](LICENSE)
 ![Bash](https://img.shields.io/badge/bash-script-4EAA25?logo=gnu-bash&logoColor=white)
 
